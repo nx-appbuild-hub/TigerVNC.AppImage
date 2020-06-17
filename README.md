@@ -1,2 +1,1 @@
-# Natron.AppImage
 # Tigervnc.AppImage
