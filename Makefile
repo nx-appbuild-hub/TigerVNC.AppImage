@@ -12,7 +12,7 @@ all:
 	rm -rf AppDir/application
 	
 	mkdir --parents AppDir/application
-	cp -r build/tigervnc-1.10.1.x86_64/usr/* AppDir/application
+	cp -r build/tigervnc-*/usr/* AppDir/application
 
 	chmod +x AppDir/AppRun
 
