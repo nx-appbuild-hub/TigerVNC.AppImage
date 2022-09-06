@@ -1,24 +1,35 @@
-SOURCE="https://bintray.com/tigervnc/stable/download_file?file_path=tigervnc-1.10.1.x86_64.tar.gz"
-DESTINATION="tigervnc.tar.xz"
-OUTPUT="TigerVNC.AppImage"
+# Copyright 2020 Alex Woroschilow (alex.woroschilow@gmail.com)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+PWD := $(shell pwd)
+
+DOCKER_COMPOSE:=docker-compose -f $(PWD)/docker-compose.yaml
+
+.EXPORT_ALL_VARIABLES:
+CID=$(shell basename $(PWD) | tr -cd '[:alnum:]' | tr A-Z a-z)
+UID=$(shell id -u)
+GID=$(shell id -g)
+
+.PHONY: all
 
 
-all:
-	echo "Building: $(OUTPUT)"
-	wget --output-document=$(DESTINATION) --continue $(SOURCE)
-	
-	mkdir -p ./build
-	tar -zxvf $(DESTINATION) -C ./build
-	rm -rf AppDir/application
-	
-	mkdir --parents AppDir/application
-	cp -r build/tigervnc-*/usr/* AppDir/application
+all: clean
+	$(DOCKER_COMPOSE) stop
+	$(DOCKER_COMPOSE) up --build --no-start
+	$(DOCKER_COMPOSE) up -d  "appimage"
+	$(DOCKER_COMPOSE) run    "appimage" make all
+	$(DOCKER_COMPOSE) run    "appimage" chown -R $(UID):$(GID) ./
+	$(DOCKER_COMPOSE) stop
 
-	chmod +x AppDir/AppRun
-
-	export ARCH=x86_64 && bin/appimagetool.AppImage AppDir $(OUTPUT)
-	chmod +x $(OUTPUT)
-
-	rm -f $(DESTINATION)
-	rm -rf AppDir/application
-	rm -rf build
+clean:
+	$(DOCKER_COMPOSE) up -d  "appimage"
+	$(DOCKER_COMPOSE) run    "appimage" make clean
+	$(DOCKER_COMPOSE) rm --stop --force

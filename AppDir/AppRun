@@ -1,4 +1,0 @@
-#! /bin/bash
-set -e
-cd ${HOME}
- ${APPDIR}/application/bin/vncviewer $@
